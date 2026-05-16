@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Context Drive v0.2</title>
+<link rel="stylesheet" href="https://unpkg.com/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.app{width:720px;border:0.5px solid #d3d1c7;border-radius:12px;overflow:hidden;background:#fff}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:0.5px solid #d3d1c7;background:#f5f5f0}
+.logo{font-size:13px;font-weight:500;color:#2c2c2a}
+.tab-row{display:flex;border-bottom:0.5px solid #d3d1c7;background:#f5f5f0;padding:0 16px}
+.tab{font-size:12px;padding:8px 14px;color:#888780;cursor:pointer;border-bottom:2px solid transparent}
+.tab.active{color:#2c2c2a;font-weight:500;border-bottom-color:#2c2c2a}
+.screen{display:none}
+.screen.active{display:block}
+
+/* Folder screen */
+.folder-screen{height:560px;display:flex;flex-direction:column}
+.folder-header{display:flex;align-items:flex-start;justify-content:space-between;padding:20px 24px 12px}
+.folder-title{font-size:16px;font-weight:500;color:#2c2c2a}
+.folder-sub{font-size:12px;color:#888780;margin-top:2px}
+.new-folder-btn{font-size:12px;padding:7px 14px;border:0.5px solid #b4b2a9;border-radius:8px;background:#fff;color:#5f5e5a;cursor:pointer;display:flex;align-items:center;gap:5px}
+.new-folder-btn:hover{background:#f5f5f0}
+.folder-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:0 24px 16px;flex:1;align-content:start;overflow-y:auto}
+.folder-card{background:#fff;border:0.5px solid #d3d1c7;border-radius:12px;padding:16px;cursor:pointer;transition:border-color 0.15s;position:relative}
+.folder-card:hover{border-color:#888780}
+.folder-icon{font-size:24px;color:#888780;margin-bottom:10px}
+.folder-name{font-size:13px;font-weight:500;color:#2c2c2a;margin-bottom:3px}
+.folder-meta{font-size:11px;color:#b4b2a9}
+.folder-check{position:absolute;top:10px;right:10px;width:15px;height:15px;accent-color:#378ADD;cursor:pointer}
+.folder-actions{display:flex;align-items:center;gap:8px;padding:12px 24px;border-top:0.5px solid #d3d1c7;background:#f5f5f0}
+.folder-sel-info{font-size:12px;color:#888780;flex:1}
+.del-btn{font-size:12px;padding:6px 12px;border:0.5px solid #E24B4A;border-radius:8px;background:#FCEBEB;color:#791F1F;cursor:pointer}
+.del-btn:disabled{opacity:0.4;cursor:not-allowed}
+.add-folder-form{background:#fff;border:1.5px dashed #b4b2a9;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.add-folder-form input{font-size:13px;padding:7px 10px;border:0.5px solid #b4b2a9;border-radius:8px;background:#fff;color:#2c2c2a;width:100%;outline:none}
+.add-folder-form input:focus{border-color:#378ADD}
+.form-btns{display:flex;gap:6px;justify-content:flex-end}
+.form-cancel{font-size:11px;padding:5px 10px;border:0.5px solid #b4b2a9;border-radius:8px;background:#fff;cursor:pointer;color:#5f5e5a}
+.form-confirm{font-size:11px;padding:5px 10px;border:0.5px solid #1D9E75;border-radius:8px;background:#E1F5EE;cursor:pointer;color:#085041}
+
+/* Node screen */
+.node-screen-wrap{height:560px}
+.back-row{display:flex;align-items:center;gap:6px;padding:8px 14px;border-bottom:0.5px solid #d3d1c7;background:#f5f5f0;font-size:12px;color:#888780}
+.back-link{display:flex;align-items:center;gap:4px;cursor:pointer;padding:3px 8px;border-radius:6px;color:#888780;transition:background 0.12s,color 0.12s}
+.back-link:hover{background:#e8e6df;color:#2c2c2a}
+.breadcrumb-sep{color:#d3d1c7;font-size:14px}
+.breadcrumb-current{font-weight:500;color:#2c2c2a}
+.node-main{display:flex;height:520px}
+.board-wrap{flex:1;overflow:hidden;position:relative;background:#f1efe8;cursor:grab}
+.board-wrap.panning{cursor:grabbing}
+.board-wrap.node-dragging{cursor:grabbing}
+.board-label{position:absolute;top:12px;left:14px;font-size:11px;font-weight:500;color:#b4b2a9;text-transform:uppercase;letter-spacing:0.06em;pointer-events:none;z-index:10}
+.board-top-btns{position:absolute;top:8px;right:12px;display:flex;gap:6px;z-index:10}
+.top-btn{font-size:12px;padding:5px 10px;border:0.5px solid #b4b2a9;border-radius:8px;background:#fff;color:#5f5e5a;cursor:pointer;display:flex;align-items:center;gap:4px}
+.top-btn:hover{background:#f5f5f0}
+.top-btn.accent{border-color:#378ADD;color:#0C447C;background:#E6F1FB}
+.board-canvas{position:absolute;top:0;left:0;transform-origin:0 0}
+.node-card{position:absolute;background:#fff;border:0.5px solid #b4b2a9;border-radius:8px;padding:8px 10px;cursor:grab;user-select:none;width:140px;transition:left 0.4s cubic-bezier(.4,0,.2,1),top 0.4s cubic-bezier(.4,0,.2,1)}
+.node-card.no-tr{transition:none}
+.node-card.dragging{opacity:0.85;z-index:999;transition:none}
+.node-card.proposed{border:1.5px dashed #1D9E75;background:#E1F5EE}
+.node-check{position:absolute;top:6px;right:6px;width:14px;height:14px;accent-color:#378ADD;cursor:pointer}
+.node-icon{font-size:16px;color:#888780;margin-bottom:4px}
+.node-title{font-size:12px;font-weight:500;color:#2c2c2a;line-height:1.3}
+.node-sub{font-size:10px;color:#b4b2a9;margin-top:2px}
+.node-tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:99px;margin-top:4px}
+.tag-peer{background:#E1F5EE;color:#0F6E56}
+.tag-parent{background:#EEEDFE;color:#3C3489}
+.tag-child{background:#FAEEDA;color:#854F0B}
+.sidebar{width:200px;border-left:0.5px solid #d3d1c7;display:flex;flex-direction:column;background:#fff}
+.discard-panel{padding:10px 12px;border-bottom:0.5px solid #d3d1c7}
+.discard-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.discard-label{font-size:11px;font-weight:500;color:#888780;text-transform:uppercase;letter-spacing:0.06em}
+.discard-actions{display:flex;gap:4px}
+.discard-btn{font-size:10px;padding:3px 7px;border:0.5px solid #d3d1c7;border-radius:8px;background:#fff;color:#5f5e5a;cursor:pointer}
+.discard-btn.danger{border-color:#E24B4A;color:#791F1F}
+.discard-item{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:8px;margin-bottom:4px;opacity:0.5;background:#f5f5f0}
+.discard-item-text{font-size:11px;color:#888780;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.drop-zone{border:1.5px dashed #d3d1c7;border-radius:8px;padding:6px;min-height:32px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#b4b2a9;margin-top:4px;transition:all 0.15s}
+.drop-zone.drag-over{border-color:#E24B4A;background:#FCEBEB;color:#A32D2D}
+.cta-panel{flex:1;padding:10px;display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+.cta-section-label{font-size:10px;font-weight:500;color:#b4b2a9;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px}
+.cta-card{padding:9px;border:0.5px solid #d3d1c7;border-radius:8px;background:#f5f5f0}
+.cta-card.highlight{border-color:#1D9E75;background:#E1F5EE}
+.cta-card.alert{border-color:#EF9F27;background:#FAEEDA}
+.cta-msg{font-size:11px;color:#888780;line-height:1.5;margin-bottom:7px}
+.cta-msg.highlight{color:#085041}
+.cta-msg.alert{color:#633806}
+.cta-btns{display:flex;gap:4px;flex-wrap:wrap}
+.cta-action{font-size:10px;padding:3px 7px;border:0.5px solid #b4b2a9;border-radius:8px;background:#fff;cursor:pointer;color:#5f5e5a}
+.cta-action.primary{background:#E1F5EE;border-color:#1D9E75;color:#085041}
+.cta-action.warn{background:#FAEEDA;border-color:#EF9F27;color:#633806}
+.propose-banner{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:#fff;border:0.5px solid #1D9E75;border-radius:12px;padding:8px 12px;display:flex;align-items:center;gap:8px;font-size:11px;color:#085041;white-space:nowrap;z-index:20}
+.propose-banner button{font-size:10px;padding:3px 8px;border-radius:8px;cursor:pointer;border:0.5px solid}
+.propose-accept{background:#E1F5EE;border-color:#1D9E75;color:#085041}
+.propose-reject{background:#fff;border-color:#b4b2a9;color:#5f5e5a}
+.hint{position:absolute;bottom:10px;right:10px;font-size:10px;color:#b4b2a9;pointer-events:none;z-index:10}
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;z-index:100}
+.modal-box{background:#fff;border:0.5px solid #b4b2a9;border-radius:12px;padding:20px 24px;max-width:280px;width:100%}
+.modal-title{font-size:14px;font-weight:500;color:#2c2c2a;margin-bottom:8px}
+.modal-desc{font-size:12px;color:#888780;line-height:1.6;margin-bottom:16px}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.modal-cancel{font-size:12px;padding:6px 12px;border:0.5px solid #b4b2a9;border-radius:8px;background:#fff;cursor:pointer;color:#5f5e5a}
+.modal-confirm{font-size:12px;padding:6px 12px;border:0.5px solid #E24B4A;border-radius:8px;background:#FCEBEB;cursor:pointer;color:#791F1F}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <span class="logo">Context Drive</span>
+  </div>
+  <div class="tab-row">
+    <div class="tab active">드라이브</div>
+    <div class="tab">채팅</div>
+  </div>
+
+  <!-- Folder Screen -->
+  <div class="screen active" id="screen-folder">
+    <div class="folder-screen">
+      <div class="folder-header">
+        <div>
+          <div class="folder-title">내 프로젝트</div>
+          <div class="folder-sub">폴더를 클릭하면 노드 보드로 진입해요</div>
+        </div>
+        <button class="new-folder-btn" onclick="showAddForm()"><i class="ti ti-folder-plus"></i> 새 폴더</button>
+      </div>
+      <div class="folder-grid" id="folder-grid">
+        <div class="folder-card" id="fc-1" onclick="openFolder('브랜딩 프로젝트')">
+          <input type="checkbox" class="folder-check" onclick="event.stopPropagation()" onchange="toggleFolderSelect('fc-1',this)">
+          <div class="folder-icon"><i class="ti ti-folder"></i></div>
+          <div class="folder-name">브랜딩 프로젝트</div>
+          <div class="folder-meta">뿌리 4개 · 폐기 1개</div>
+        </div>
+        <div class="folder-card" id="fc-2" onclick="openFolder('제텔카스텐 시스템')">
+          <input type="checkbox" class="folder-check" onclick="event.stopPropagation()" onchange="toggleFolderSelect('fc-2',this)">
+          <div class="folder-icon"><i class="ti ti-folder"></i></div>
+          <div class="folder-name">제텔카스텐 시스템</div>
+          <div class="folder-meta">뿌리 7개 · 폐기 0개</div>
+        </div>
+        <div class="folder-card" id="fc-3" onclick="openFolder('UI 포트폴리오')">
+          <input type="checkbox" class="folder-check" onclick="event.stopPropagation()" onchange="toggleFolderSelect('fc-3',this)">
+          <div class="folder-icon"><i class="ti ti-folder"></i></div>
+          <div class="folder-name">UI 포트폴리오</div>
+          <div class="folder-meta">뿌리 3개 · 폐기 2개</div>
+        </div>
+        <div id="add-form-slot"></div>
+      </div>
+      <div class="folder-actions">
+        <span class="folder-sel-info" id="sel-info">폴더를 선택하면 삭제할 수 있어요</span>
+        <button class="del-btn" id="del-folder-btn" disabled onclick="deleteSelectedFolders()"><i class="ti ti-trash"></i> 삭제</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Node Board Screen -->
+  <div class="screen" id="screen-node">
+    <div class="node-screen-wrap">
+      <div class="back-row">
+        <span class="back-link" onclick="goBack()"><i class="ti ti-layout-grid"></i> 컨텍스트 드라이브</span>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-current" id="back-label">브랜딩 프로젝트</span>
+      </div>
+      <div class="node-main">
+        <div class="board-wrap" id="board-wrap">
+          <span class="board-label">뿌리 섹션</span>
+          <div class="board-top-btns">
+            <button class="top-btn accent" onclick="autoLayout()"><i class="ti ti-layout-distribute-vertical"></i> 자동 정렬</button>
+            <button class="top-btn" onclick="addNode()"><i class="ti ti-plus"></i> 소스 추가</button>
+          </div>
+          <div class="board-canvas" id="board-canvas">
+            <svg id="svg-edges" style="position:absolute;top:0;left:0;width:3000px;height:3000px;pointer-events:none;overflow:visible">
+              <defs>
+                <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                  <path d="M2 1L8 5L2 9" fill="none" stroke="#B4B2A9" stroke-width="1.5" stroke-linecap="round"/>
+                </marker>
+                <marker id="arr-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                  <path d="M2 1L8 5L2 9" fill="none" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round"/>
+                </marker>
+              </defs>
+              <line id="e-1-2" stroke="#B4B2A9" stroke-width="0.5" marker-end="url(#arr)"/>
+              <line id="e-1-4" stroke="#B4B2A9" stroke-width="0.5" marker-end="url(#arr)"/>
+              <line id="e-2-3" stroke="#1D9E75" stroke-width="0.5" stroke-dasharray="5 3" marker-end="url(#arr-teal)"/>
+            </svg>
+            <div class="node-card no-tr" id="n1" data-id="1" data-level="0" style="left:60px;top:70px">
+              <input type="checkbox" class="node-check">
+              <div class="node-icon"><i class="ti ti-file-text"></i></div>
+              <div class="node-title">브랜드 에센스</div>
+              <div class="node-sub">핵심 가치 정의</div>
+              <span class="node-tag tag-parent">상위</span>
+            </div>
+            <div class="node-card no-tr" id="n2" data-id="2" data-level="1" style="left:250px;top:50px">
+              <input type="checkbox" class="node-check">
+              <div class="node-icon"><i class="ti ti-photo"></i></div>
+              <div class="node-title">무드보드</div>
+              <div class="node-sub">비주얼 레퍼런스</div>
+              <span class="node-tag tag-peer">동등</span>
+            </div>
+            <div class="node-card proposed no-tr" id="n3" data-id="3" data-level="2" style="left:420px;top:90px">
+              <input type="checkbox" class="node-check">
+              <div class="node-icon"><i class="ti ti-target"></i></div>
+              <div class="node-title">포지셔닝 v2</div>
+              <div class="node-sub">새 방향 문서</div>
+              <span class="node-tag tag-child">하위</span>
+            </div>
+            <div class="node-card no-tr" id="n4" data-id="4" data-level="2" style="left:150px;top:220px">
+              <input type="checkbox" class="node-check">
+              <div class="node-icon"><i class="ti ti-palette"></i></div>
+              <div class="node-title">컬러 시스템</div>
+              <div class="node-sub">브랜드 컬러 가이드</div>
+              <span class="node-tag tag-child">하위</span>
+            </div>
+          </div>
+          <div class="propose-banner" id="propose-banner">
+            <i class="ti ti-git-merge"></i>
+            포지셔닝 v2를 무드보드와 연결할까요?
+            <button class="propose-accept" onclick="acceptProposal()">수락</button>
+            <button class="propose-reject" onclick="rejectProposal()">거절</button>
+          </div>
+          <span class="hint">노드 드래그 이동 · 빈 공간 드래그 = 보드 이동</span>
+        </div>
+        <div class="sidebar">
+          <div class="discard-panel">
+            <div class="discard-header">
+              <span class="discard-label">폐기</span>
+              <div class="discard-actions">
+                <button class="discard-btn" onclick="restoreSelected()"><i class="ti ti-refresh"></i></button>
+                <button class="discard-btn danger" onclick="showDeleteModal()"><i class="ti ti-trash"></i></button>
+              </div>
+            </div>
+            <div id="discard-list">
+              <div class="discard-item" id="d1" data-node-id="">
+                <input type="checkbox" onchange="toggleDiscardSelect('d1',this)">
+                <i class="ti ti-target" style="font-size:12px;color:#b4b2a9"></i>
+                <span class="discard-item-text">포지셔닝 v1</span>
+              </div>
+            </div>
+            <div class="drop-zone" id="drop-zone">
+              <i class="ti ti-drag-drop" style="margin-right:3px"></i> 여기로 드래그
+            </div>
+          </div>
+          <div class="cta-panel">
+            <div class="cta-section-label">LLM 제안</div>
+            <div class="cta-card alert" id="cta-change">
+              <div class="cta-msg alert"><i class="ti ti-alert-circle" style="font-size:11px;margin-right:3px"></i>포지셔닝 방향이 업데이트됐어요. 이어서 진행할까요?</div>
+              <div class="cta-btns">
+                <button class="cta-action warn" onclick="alert('채팅으로 연결됩니다.')">이어서 진행</button>
+                <button class="cta-action" onclick="dismissCta('cta-change')">닫기</button>
+              </div>
+            </div>
+            <div class="cta-card highlight" id="cta-next">
+              <div class="cta-msg highlight"><i class="ti ti-bulb" style="font-size:11px;margin-right:3px"></i>뿌리 섹션 기반 다음 단계를 제안해요.</div>
+              <div class="cta-btns">
+                <button class="cta-action primary" onclick="alert('채팅으로 연결됩니다.')">컬러 시스템 구체화</button>
+                <button class="cta-action" onclick="dismissCta('cta-next')">닫기</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modal-container"></div>
+
+<script>
+const NODE_W=140,NODE_H=104,COL_GAP=55,ROW_GAP=45;
+const nodeData={1:{x:60,y:70,w:NODE_W,h:NODE_H,level:0},2:{x:250,y:50,w:NODE_W,h:NODE_H,level:1},3:{x:420,y:90,w:NODE_W,h:NODE_H,level:2},4:{x:150,y:220,w:NODE_W,h:NODE_H,level:2}};
+const edges=[{id:'e-1-2',from:1,to:2},{id:'e-1-4',from:1,to:4},{id:'e-2-3',from:2,to:3}];
+let panX=0,panY=0,isPanning=false,panStartX=0,panStartY=0;
+let draggingNode=null,dragOffX=0,dragOffY=0;
+let selectedDiscard=new Set(),selectedFolders=new Set(),addingFolder=false;
+
+function getCenter(id){const n=nodeData[id];return{x:n.x+n.w/2,y:n.y+n.h/2};}
+function drawEdges(){edges.forEach(e=>{const el=document.getElementById(e.id);if(!el||el.style.display==='none')return;const a=getCenter(e.from),b=getCenter(e.to);el.setAttribute('x1',a.x);el.setAttribute('y1',a.y);el.setAttribute('x2',b.x);el.setAttribute('y2',b.y);});}
+function applyTransform(){document.getElementById('board-canvas').style.transform=`translate(${panX}px,${panY}px)`;}
+
+function openFolder(name){
+  document.getElementById('screen-folder').classList.remove('active');
+  document.getElementById('screen-node').classList.add('active');
+  document.getElementById('back-label').textContent=name;
+  setTimeout(drawEdges,50);
+}
+function goBack(){document.getElementById('screen-node').classList.remove('active');document.getElementById('screen-folder').classList.add('active');}
+
+function toggleFolderSelect(id,cb){
+  if(cb.checked)selectedFolders.add(id);else selectedFolders.delete(id);
+  document.getElementById('sel-info').textContent=selectedFolders.size>0?`${selectedFolders.size}개 선택됨`:'폴더를 선택하면 삭제할 수 있어요';
+  document.getElementById('del-folder-btn').disabled=selectedFolders.size===0;
+}
+function deleteSelectedFolders(){selectedFolders.forEach(id=>{const el=document.getElementById(id);if(el)el.remove();});selectedFolders.clear();document.getElementById('sel-info').textContent='폴더를 선택하면 삭제할 수 있어요';document.getElementById('del-folder-btn').disabled=true;}
+
+function showAddForm(){
+  if(addingFolder)return;addingFolder=true;
+  const slot=document.getElementById('add-form-slot');
+  slot.innerHTML=`<div class="add-folder-form"><input type="text" id="new-folder-input" placeholder="폴더 이름 입력..." maxlength="20"><div class="form-btns"><button class="form-cancel" onclick="cancelAdd()">취소</button><button class="form-confirm" onclick="confirmAdd()">만들기</button></div></div>`;
+  setTimeout(()=>{const i=document.getElementById('new-folder-input');if(i)i.focus();},50);
+}
+function cancelAdd(){document.getElementById('add-form-slot').innerHTML='';addingFolder=false;}
+function confirmAdd(){
+  const inp=document.getElementById('new-folder-input');
+  const name=(inp?inp.value.trim():'')||'새 폴더';
+  const id='fc-'+Date.now();const card=document.createElement('div');
+  card.className='folder-card';card.id=id;card.onclick=()=>openFolder(name);
+  card.innerHTML=`<input type="checkbox" class="folder-check" onclick="event.stopPropagation()" onchange="toggleFolderSelect('${id}',this)"><div class="folder-icon"><i class="ti ti-folder"></i></div><div class="folder-name">${name}</div><div class="folder-meta">뿌리 0개 · 폐기 0개</div>`;
+  document.getElementById('folder-grid').insertBefore(card,document.getElementById('add-form-slot'));
+  document.getElementById('add-form-slot').innerHTML='';addingFolder=false;
+}
+
+const bw=document.getElementById('board-wrap');
+bw.addEventListener('mousedown',e=>{
+  if(e.target.closest('.node-card')){
+    const card=e.target.closest('.node-card');if(e.target.type==='checkbox')return;
+    const id=parseInt(card.dataset.id);const rect=card.getBoundingClientRect();
+    draggingNode=id;dragOffX=e.clientX-rect.left;dragOffY=e.clientY-rect.top;
+    card.classList.add('dragging','no-tr');bw.classList.add('node-dragging');e.stopPropagation();
+  } else {isPanning=true;panStartX=e.clientX-panX;panStartY=e.clientY-panY;bw.classList.add('panning');}
+});
+window.addEventListener('mousemove',e=>{
+  if(draggingNode!==null){
+    const wr=bw.getBoundingClientRect();
+    const nx=e.clientX-wr.left-panX-dragOffX,ny=e.clientY-wr.top-panY-dragOffY;
+    nodeData[draggingNode].x=nx;nodeData[draggingNode].y=ny;
+    const c=document.getElementById('n'+draggingNode);c.style.left=nx+'px';c.style.top=ny+'px';drawEdges();
+    const dz=document.getElementById('drop-zone'),dr=dz.getBoundingClientRect();
+    if(e.clientX>=dr.left&&e.clientX<=dr.right&&e.clientY>=dr.top&&e.clientY<=dr.bottom)dz.classList.add('drag-over');else dz.classList.remove('drag-over');
+  } else if(isPanning){panX=e.clientX-panStartX;panY=e.clientY-panStartY;applyTransform();}
+});
+window.addEventListener('mouseup',e=>{
+  if(draggingNode!==null){
+    document.getElementById('n'+draggingNode).classList.remove('dragging');bw.classList.remove('node-dragging');
+    const dz=document.getElementById('drop-zone'),dr=dz.getBoundingClientRect();
+    if(e.clientX>=dr.left&&e.clientX<=dr.right&&e.clientY>=dr.top&&e.clientY<=dr.bottom)discardNode(draggingNode);
+    dz.classList.remove('drag-over');draggingNode=null;
+  }
+  if(isPanning){isPanning=false;bw.classList.remove('panning');}
+});
+
+function discardNode(id){
+  const card=document.getElementById('n'+id);if(!card)return;
+  const title=card.querySelector('.node-title').textContent;card.style.display='none';
+  edges.forEach(e=>{if(e.from===id||e.to===id){const el=document.getElementById(e.id);if(el)el.style.display='none';}});
+  const did='d'+Date.now();const item=document.createElement('div');item.className='discard-item';item.id=did;item.dataset.nodeId=id;
+  item.innerHTML=`<input type="checkbox" onchange="toggleDiscardSelect('${did}',this)"><i class="ti ti-file" style="font-size:12px;color:#b4b2a9"></i><span class="discard-item-text">${title}</span>`;
+  document.getElementById('discard-list').appendChild(item);
+}
+function toggleDiscardSelect(id,cb){if(cb.checked)selectedDiscard.add(id);else selectedDiscard.delete(id);}
+function restoreSelected(){
+  selectedDiscard.forEach(did=>{const item=document.getElementById(did);if(!item)return;const nid=item.dataset.nodeId;if(nid){const c=document.getElementById('n'+nid);if(c)c.style.display='';edges.forEach(e=>{if(e.from==nid||e.to==nid){const el=document.getElementById(e.id);if(el)el.style.display='';}});}item.remove();});
+  selectedDiscard.clear();drawEdges();
+}
+function acceptProposal(){document.getElementById('propose-banner').style.display='none';document.getElementById('n3').classList.remove('proposed');const e=document.getElementById('e-2-3');if(e){e.style.strokeDasharray='none';e.style.stroke='#B4B2A9';e.setAttribute('marker-end','url(#arr)');}}
+function rejectProposal(){document.getElementById('propose-banner').style.display='none';const e=document.getElementById('e-2-3');if(e)e.style.display='none';}
+function autoLayout(){
+  const lm={0:[],1:[],2:[]};Object.entries(nodeData).forEach(([id,n])=>{const c=document.getElementById('n'+id);if(c&&c.style.display!=='none'&&lm[n.level])lm[n.level].push(parseInt(id));});
+  Object.entries(lm).forEach(([lvl,ids])=>{const cx=60+parseInt(lvl)*(NODE_W+COL_GAP);ids.forEach((id,i)=>{nodeData[id].x=cx;nodeData[id].y=60+i*(NODE_H+ROW_GAP);});});
+  Object.entries(nodeData).forEach(([id,n])=>{const c=document.getElementById('n'+id);if(!c||c.style.display==='none')return;c.classList.remove('no-tr');c.style.left=n.x+'px';c.style.top=n.y+'px';});
+  const iv=setInterval(drawEdges,16);setTimeout(()=>clearInterval(iv),500);
+}
+function showDeleteModal(){
+  const mc=document.getElementById('modal-container');
+  if(selectedDiscard.size===0){mc.innerHTML=`<div class="modal-overlay" onclick="closeModal()"><div class="modal-box" onclick="event.stopPropagation()"><div class="modal-title">선택된 항목 없음</div><div class="modal-desc">체크박스로 항목을 선택해주세요.</div><div class="modal-btns"><button class="modal-cancel" onclick="closeModal()">확인</button></div></div></div>`;return;}
+  mc.innerHTML=`<div class="modal-overlay" onclick="closeModal()"><div class="modal-box" onclick="event.stopPropagation()"><div class="modal-title">영구삭제 확인</div><div class="modal-desc">${selectedDiscard.size}개를 영구삭제합니다. 되돌릴 수 없어요.</div><div class="modal-btns"><button class="modal-cancel" onclick="closeModal()">취소</button><button class="modal-confirm" onclick="confirmDelete()">영구삭제</button></div></div></div>`;
+}
+function confirmDelete(){selectedDiscard.forEach(did=>{const el=document.getElementById(did);if(el)el.remove();});selectedDiscard.clear();closeModal();}
+function closeModal(){document.getElementById('modal-container').innerHTML='';}
+function dismissCta(id){const el=document.getElementById(id);if(el)el.style.display='none';}
+function addNode(){
+  const id=Date.now();const x=60+Math.floor(Math.random()*200),y=60+Math.floor(Math.random()*120);
+  nodeData[id]={x,y,w:NODE_W,h:NODE_H,level:1};
+  const canvas=document.getElementById('board-canvas');const card=document.createElement('div');
+  card.className='node-card no-tr';card.id='n'+id;card.dataset.id=id;card.dataset.level=1;
+  card.style.left=x+'px';card.style.top=y+'px';
+  card.innerHTML=`<input type="checkbox" class="node-check"><div class="node-icon"><i class="ti ti-file"></i></div><div class="node-title">새 소스</div><div class="node-sub">드래그하여 배치</div><span class="node-tag tag-peer">동등</span>`;
+  canvas.appendChild(card);
+}
+drawEdges();
+</script>
+</body>
+</html>
