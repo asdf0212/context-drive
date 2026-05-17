@@ -8,12 +8,13 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-.app{width:720px;border:0.5px solid #d3d1c7;border-radius:12px;overflow:hidden;background:#fff}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:0.5px solid #d3d1c7;background:#f5f5f0}
+.app{width:740px;border:0.5px solid #d3d1c7;border-radius:12px;overflow:hidden;background:#fff}
+.topbar{display:flex;align-items:center;padding:10px 16px;border-bottom:0.5px solid #d3d1c7;background:#f5f5f0}
 .logo{font-size:13px;font-weight:500;color:#2c2c2a}
 .tab-row{display:flex;border-bottom:0.5px solid #d3d1c7;background:#f5f5f0;padding:0 16px}
-.tab{font-size:12px;padding:8px 14px;color:#888780;cursor:pointer;border-bottom:2px solid transparent}
+.tab{font-size:12px;padding:8px 14px;color:#888780;cursor:pointer;border-bottom:2px solid transparent;transition:color 0.12s}
 .tab.active{color:#2c2c2a;font-weight:500;border-bottom-color:#2c2c2a}
+.tab:hover{color:#2c2c2a}
 .screen{display:none}
 .screen.active{display:block}
 
@@ -43,13 +44,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .form-confirm{font-size:11px;padding:5px 10px;border:0.5px solid #1D9E75;border-radius:8px;background:#E1F5EE;cursor:pointer;color:#085041}
 
 /* Node screen */
-.node-screen-wrap{height:560px}
-.back-row{display:flex;align-items:center;gap:6px;padding:8px 14px;border-bottom:0.5px solid #d3d1c7;background:#f5f5f0;font-size:12px;color:#888780}
-.back-link{display:flex;align-items:center;gap:4px;cursor:pointer;padding:3px 8px;border-radius:6px;color:#888780;transition:background 0.12s,color 0.12s}
+.node-screen-wrap{height:560px;display:flex;flex-direction:column}
+.back-row{display:flex;align-items:center;gap:6px;padding:8px 14px;border-bottom:0.5px solid #d3d1c7;background:#f5f5f0;font-size:12px;color:#888780;flex-shrink:0}
+.back-link{display:flex;align-items:center;gap:4px;cursor:pointer;padding:3px 8px;border-radius:6px;color:#888780;transition:background 0.12s}
 .back-link:hover{background:#e8e6df;color:#2c2c2a}
-.breadcrumb-sep{color:#d3d1c7;font-size:14px}
+.breadcrumb-sep{color:#d3d1c7}
 .breadcrumb-current{font-weight:500;color:#2c2c2a}
-.node-main{display:flex;height:520px}
+.node-main{display:flex;flex:1;overflow:hidden}
 .board-wrap{flex:1;overflow:hidden;position:relative;background:#f1efe8;cursor:grab}
 .board-wrap.panning{cursor:grabbing}
 .board-wrap.node-dragging{cursor:grabbing}
@@ -59,28 +60,50 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .top-btn:hover{background:#f5f5f0}
 .top-btn.accent{border-color:#378ADD;color:#0C447C;background:#E6F1FB}
 .board-canvas{position:absolute;top:0;left:0;transform-origin:0 0}
-.node-card{position:absolute;background:#fff;border:0.5px solid #b4b2a9;border-radius:8px;padding:8px 10px;cursor:grab;user-select:none;width:140px;transition:left 0.4s cubic-bezier(.4,0,.2,1),top 0.4s cubic-bezier(.4,0,.2,1)}
+
+/* Node card */
+.node-card{position:absolute;background:#fff;border:0.5px solid #b4b2a9;border-radius:8px;padding:8px 10px 8px 10px;cursor:grab;user-select:none;width:144px;transition:left 0.4s cubic-bezier(.4,0,.2,1),top 0.4s cubic-bezier(.4,0,.2,1)}
 .node-card.no-tr{transition:none}
 .node-card.dragging{opacity:0.85;z-index:999;transition:none}
 .node-card.proposed{border:1.5px dashed #1D9E75;background:#E1F5EE}
+.node-card.selected-node{border:1.5px solid #378ADD;background:#E6F1FB}
 .node-check{position:absolute;top:6px;right:6px;width:14px;height:14px;accent-color:#378ADD;cursor:pointer}
-.node-icon{font-size:16px;color:#888780;margin-bottom:4px}
-.node-title{font-size:12px;font-weight:500;color:#2c2c2a;line-height:1.3}
+.node-icon{font-size:15px;color:#888780;margin-bottom:3px}
+.node-title{font-size:12px;font-weight:500;color:#2c2c2a;line-height:1.3;cursor:text;min-height:16px;word-break:break-all}
+.node-title.editing{outline:none;border-bottom:1px solid #378ADD;background:transparent;color:#2c2c2a;font-size:12px;font-weight:500;font-family:inherit;width:100%;padding:0}
 .node-sub{font-size:10px;color:#b4b2a9;margin-top:2px}
-.node-tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:99px;margin-top:4px}
-.tag-peer{background:#E1F5EE;color:#0F6E56}
-.tag-parent{background:#EEEDFE;color:#3C3489}
-.tag-child{background:#FAEEDA;color:#854F0B}
-.sidebar{width:200px;border-left:0.5px solid #d3d1c7;display:flex;flex-direction:column;background:#fff}
+.node-hint{font-size:9px;color:#d3d1c7;margin-top:3px;pointer-events:none}
+
+/* Connection handles */
+.conn-handle{position:absolute;width:12px;height:12px;border-radius:50%;background:#1D9E75;border:2px solid #fff;cursor:crosshair;z-index:20;opacity:0;transition:opacity 0.15s}
+.node-card:hover .conn-handle{opacity:1}
+.conn-handle.right{right:-6px;top:50%;transform:translateY(-50%)}
+.conn-handle.bottom{bottom:-6px;left:50%;transform:translateX(-50%)}
+.conn-handle:hover{background:#085041}
+.node-card.conn-target{border:2px solid #1D9E75;background:#E1F5EE}
+
+/* Action bar */
+.node-action-bar{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:8px;background:#fff;border:0.5px solid #d3d1c7;border-radius:99px;padding:5px 14px;white-space:nowrap;z-index:30;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+.node-action-bar.visible{display:flex}
+.action-bar-label{font-size:11px;color:#888780}
+.action-bar-divider{width:0.5px;height:14px;background:#d3d1c7}
+.action-bar-btn{font-size:11px;padding:4px 10px;border-radius:99px;cursor:pointer;border:0.5px solid;display:flex;align-items:center;gap:4px}
+.action-bar-btn.discard{border-color:#E24B4A;background:#FCEBEB;color:#791F1F}
+.action-bar-btn.discard:hover{background:#F09595}
+
+/* Sidebar */
+.sidebar{width:204px;border-left:0.5px solid #d3d1c7;display:flex;flex-direction:column;background:#fff;flex-shrink:0}
 .discard-panel{padding:10px 12px;border-bottom:0.5px solid #d3d1c7}
 .discard-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .discard-label{font-size:11px;font-weight:500;color:#888780;text-transform:uppercase;letter-spacing:0.06em}
 .discard-actions{display:flex;gap:4px}
-.discard-btn{font-size:10px;padding:3px 7px;border:0.5px solid #d3d1c7;border-radius:8px;background:#fff;color:#5f5e5a;cursor:pointer}
+.discard-btn{font-size:10px;padding:3px 8px;border:0.5px solid #d3d1c7;border-radius:8px;background:#fff;color:#5f5e5a;cursor:pointer;display:flex;align-items:center;gap:3px;white-space:nowrap}
+.discard-btn:hover{background:#f5f5f0}
 .discard-btn.danger{border-color:#E24B4A;color:#791F1F}
-.discard-item{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:8px;margin-bottom:4px;opacity:0.5;background:#f5f5f0}
+.discard-btn.danger:hover{background:#FCEBEB}
+.discard-item{display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:6px;margin-bottom:3px;opacity:0.5;background:#f5f5f0}
 .discard-item-text{font-size:11px;color:#888780;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.drop-zone{border:1.5px dashed #d3d1c7;border-radius:8px;padding:6px;min-height:32px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#b4b2a9;margin-top:4px;transition:all 0.15s}
+.drop-zone{border:1.5px dashed #d3d1c7;border-radius:8px;padding:6px;min-height:30px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#b4b2a9;margin-top:4px;transition:all 0.15s}
 .drop-zone.drag-over{border-color:#E24B4A;background:#FCEBEB;color:#A32D2D}
 .cta-panel{flex:1;padding:10px;display:flex;flex-direction:column;gap:8px;overflow-y:auto}
 .cta-section-label{font-size:10px;font-weight:500;color:#b4b2a9;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px}
@@ -94,11 +117,55 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .cta-action{font-size:10px;padding:3px 7px;border:0.5px solid #b4b2a9;border-radius:8px;background:#fff;cursor:pointer;color:#5f5e5a}
 .cta-action.primary{background:#E1F5EE;border-color:#1D9E75;color:#085041}
 .cta-action.warn{background:#FAEEDA;border-color:#EF9F27;color:#633806}
-.propose-banner{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:#fff;border:0.5px solid #1D9E75;border-radius:12px;padding:8px 12px;display:flex;align-items:center;gap:8px;font-size:11px;color:#085041;white-space:nowrap;z-index:20}
-.propose-banner button{font-size:10px;padding:3px 8px;border-radius:8px;cursor:pointer;border:0.5px solid}
+
+/* Propose banner */
+.propose-banner{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:#fff;border:0.5px solid #1D9E75;border-radius:12px;padding:8px 12px;display:flex;align-items:center;gap:8px;font-size:11px;color:#085041;white-space:nowrap;z-index:25;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+.propose-banner button{font-size:10px;padding:3px 9px;border-radius:8px;cursor:pointer;border:0.5px solid}
 .propose-accept{background:#E1F5EE;border-color:#1D9E75;color:#085041}
-.propose-reject{background:#fff;border-color:#b4b2a9;color:#5f5e5a}
-.hint{position:absolute;bottom:10px;right:10px;font-size:10px;color:#b4b2a9;pointer-events:none;z-index:10}
+.propose-reject{background:#FCEBEB;border-color:#E24B4A;color:#791F1F}
+
+/* Edge delete popup */
+.edge-popup{position:absolute;background:#fff;border:0.5px solid #E24B4A;border-radius:8px;padding:5px 10px;font-size:11px;color:#791F1F;cursor:pointer;z-index:50;display:none;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+.edge-popup:hover{background:#FCEBEB}
+
+.hint{position:absolute;bottom:10px;left:14px;font-size:10px;color:#b4b2a9;pointer-events:none;z-index:10;line-height:1.6}
+
+/* Chat screen */
+.chat-screen{height:560px;display:flex;flex-direction:column}
+.chat-screen-header{padding:16px 20px 12px;border-bottom:0.5px solid #d3d1c7}
+.chat-screen-title{font-size:15px;font-weight:500;color:#2c2c2a}
+.chat-screen-sub{font-size:12px;color:#888780;margin-top:2px}
+.chat-folder-list{padding:12px 20px;display:flex;flex-direction:column;gap:6px;flex:1;overflow-y:auto}
+.chat-folder-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:0.5px solid #d3d1c7;border-radius:8px;cursor:pointer;transition:border-color 0.12s}
+.chat-folder-item:hover{border-color:#888780;background:#f5f5f0}
+.chat-folder-icon{font-size:18px;color:#888780}
+.chat-folder-info{flex:1}
+.chat-folder-name{font-size:13px;font-weight:500;color:#2c2c2a}
+.chat-folder-meta{font-size:11px;color:#b4b2a9;margin-top:1px}
+.chat-open-btn{font-size:11px;padding:4px 10px;border:0.5px solid #b4b2a9;border-radius:8px;background:#fff;color:#5f5e5a;cursor:pointer}
+.chat-open-btn:hover{background:#f5f5f0}
+
+/* Chat conv */
+.chat-conv-wrap{height:560px;display:flex;flex-direction:column}
+.chat-conv-header{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:0.5px solid #d3d1c7;background:#f5f5f0;flex-shrink:0}
+.chat-back-link{display:flex;align-items:center;gap:4px;cursor:pointer;padding:3px 8px;border-radius:6px;color:#888780;font-size:12px;transition:background 0.12s}
+.chat-back-link:hover{background:#e8e6df;color:#2c2c2a}
+.chat-folder-badge{font-size:11px;padding:2px 8px;border-radius:99px;background:#E1F5EE;color:#0F6E56;border:0.5px solid #1D9E75}
+.chat-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.chat-msg{display:flex;flex-direction:column}
+.chat-msg.user{align-items:flex-end}
+.chat-msg.assistant{align-items:flex-start}
+.chat-bubble{padding:9px 12px;border-radius:10px;font-size:12px;line-height:1.6;max-width:82%}
+.chat-msg.user .chat-bubble{background:#2c2c2a;color:#fff}
+.chat-msg.assistant .chat-bubble{background:#f5f5f0;color:#2c2c2a;border:0.5px solid #d3d1c7}
+.chat-context-badge{font-size:10px;padding:2px 8px;border-radius:99px;background:#E1F5EE;color:#085041;border:0.5px solid #1D9E75;align-self:flex-start;margin-bottom:2px}
+.chat-input-row{display:flex;gap:8px;padding:12px 16px;border-top:0.5px solid #d3d1c7;flex-shrink:0}
+.chat-input-row input{flex:1;font-size:12px;padding:8px 12px;border:0.5px solid #d3d1c7;border-radius:8px;background:#fff;color:#2c2c2a;outline:none}
+.chat-input-row input:focus{border-color:#378ADD}
+.chat-send-btn{font-size:12px;padding:8px 14px;border:0.5px solid #b4b2a9;border-radius:8px;background:#fff;color:#5f5e5a;cursor:pointer;display:flex;align-items:center;gap:4px}
+.chat-send-btn:hover{background:#f5f5f0}
+
+/* Modal */
 .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;z-index:100}
 .modal-box{background:#fff;border:0.5px solid #b4b2a9;border-radius:12px;padding:20px 24px;max-width:280px;width:100%}
 .modal-title{font-size:14px;font-weight:500;color:#2c2c2a;margin-bottom:8px}
@@ -110,15 +177,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </head>
 <body>
 <div class="app">
-  <div class="topbar">
-    <span class="logo">Context Drive</span>
-  </div>
+  <div class="topbar"><span class="logo">Context Drive</span></div>
   <div class="tab-row">
-    <div class="tab active">드라이브</div>
-    <div class="tab">채팅</div>
+    <div class="tab active" id="tab-drive" onclick="switchMainTab('drive')">드라이브</div>
+    <div class="tab" id="tab-chat" onclick="switchMainTab('chat')">채팅</div>
   </div>
 
-  <!-- Folder Screen -->
+  <!-- 드라이브: 폴더 목록 -->
   <div class="screen active" id="screen-folder">
     <div class="folder-screen">
       <div class="folder-header">
@@ -156,7 +221,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
   </div>
 
-  <!-- Node Board Screen -->
+  <!-- 드라이브: 노드 보드 -->
   <div class="screen" id="screen-node">
     <div class="node-screen-wrap">
       <div class="back-row">
@@ -172,7 +237,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <button class="top-btn" onclick="addNode()"><i class="ti ti-plus"></i> 소스 추가</button>
           </div>
           <div class="board-canvas" id="board-canvas">
-            <svg id="svg-edges" style="position:absolute;top:0;left:0;width:3000px;height:3000px;pointer-events:none;overflow:visible">
+            <svg id="svg-edges" style="position:absolute;top:0;left:0;width:3000px;height:3000px;overflow:visible">
               <defs>
                 <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
                   <path d="M2 1L8 5L2 9" fill="none" stroke="#B4B2A9" stroke-width="1.5" stroke-linecap="round"/>
@@ -181,59 +246,87 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
                   <path d="M2 1L8 5L2 9" fill="none" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round"/>
                 </marker>
               </defs>
-              <line id="e-1-2" stroke="#B4B2A9" stroke-width="0.5" marker-end="url(#arr)"/>
-              <line id="e-1-4" stroke="#B4B2A9" stroke-width="0.5" marker-end="url(#arr)"/>
-              <line id="e-2-3" stroke="#1D9E75" stroke-width="0.5" stroke-dasharray="5 3" marker-end="url(#arr-teal)"/>
+              <!-- 실제 보이는 선 -->
+              <line id="e-1-2-vis" stroke="#B4B2A9" stroke-width="1" marker-end="url(#arr)" style="pointer-events:none"/>
+              <line id="e-1-4-vis" stroke="#B4B2A9" stroke-width="1" marker-end="url(#arr)" style="pointer-events:none"/>
+              <line id="e-2-3-vis" stroke="#1D9E75" stroke-width="1" stroke-dasharray="5 3" marker-end="url(#arr-teal)" style="pointer-events:none"/>
+              <!-- 두꺼운 투명 클릭 타겟 -->
+              <line id="e-1-2" stroke="transparent" stroke-width="12" style="cursor:pointer" onclick="onEdgeClick(event,'e-1-2')"/>
+              <line id="e-1-4" stroke="transparent" stroke-width="12" style="cursor:pointer" onclick="onEdgeClick(event,'e-1-4')"/>
+              <line id="e-2-3" stroke="transparent" stroke-width="12" style="cursor:pointer" onclick="onEdgeClick(event,'e-2-3')"/>
+              <line id="temp-edge" stroke="#1D9E75" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arr-teal)" style="display:none;pointer-events:none"/>
             </svg>
-            <div class="node-card no-tr" id="n1" data-id="1" data-level="0" style="left:60px;top:70px">
-              <input type="checkbox" class="node-check">
+            <div class="node-card no-tr" id="n1" data-id="1" style="left:60px;top:70px">
+              <input type="checkbox" class="node-check" onchange="toggleNodeSelect(1,this)">
               <div class="node-icon"><i class="ti ti-file-text"></i></div>
-              <div class="node-title">브랜드 에센스</div>
+              <div class="node-title" ondblclick="startEditTitle(this)">브랜드 에센스</div>
               <div class="node-sub">핵심 가치 정의</div>
-              <span class="node-tag tag-parent">상위</span>
+              <div class="node-hint">더블클릭해서 이름 변경</div>
+              <div class="conn-handle right" onmousedown="startConnect(event,1)"></div>
+              <div class="conn-handle bottom" onmousedown="startConnect(event,1)"></div>
             </div>
-            <div class="node-card no-tr" id="n2" data-id="2" data-level="1" style="left:250px;top:50px">
-              <input type="checkbox" class="node-check">
+            <div class="node-card no-tr" id="n2" data-id="2" style="left:250px;top:50px">
+              <input type="checkbox" class="node-check" onchange="toggleNodeSelect(2,this)">
               <div class="node-icon"><i class="ti ti-photo"></i></div>
-              <div class="node-title">무드보드</div>
+              <div class="node-title" ondblclick="startEditTitle(this)">무드보드</div>
               <div class="node-sub">비주얼 레퍼런스</div>
-              <span class="node-tag tag-peer">동등</span>
+              <div class="node-hint">더블클릭해서 이름 변경</div>
+              <div class="conn-handle right" onmousedown="startConnect(event,2)"></div>
+              <div class="conn-handle bottom" onmousedown="startConnect(event,2)"></div>
             </div>
-            <div class="node-card proposed no-tr" id="n3" data-id="3" data-level="2" style="left:420px;top:90px">
-              <input type="checkbox" class="node-check">
+            <div class="node-card proposed no-tr" id="n3" data-id="3" style="left:420px;top:90px">
+              <input type="checkbox" class="node-check" onchange="toggleNodeSelect(3,this)">
               <div class="node-icon"><i class="ti ti-target"></i></div>
-              <div class="node-title">포지셔닝 v2</div>
+              <div class="node-title" ondblclick="startEditTitle(this)">포지셔닝 v2</div>
               <div class="node-sub">새 방향 문서</div>
-              <span class="node-tag tag-child">하위</span>
+              <div class="node-hint">더블클릭해서 이름 변경</div>
+              <div class="conn-handle right" onmousedown="startConnect(event,3)"></div>
+              <div class="conn-handle bottom" onmousedown="startConnect(event,3)"></div>
             </div>
-            <div class="node-card no-tr" id="n4" data-id="4" data-level="2" style="left:150px;top:220px">
-              <input type="checkbox" class="node-check">
+            <div class="node-card no-tr" id="n4" data-id="4" style="left:150px;top:220px">
+              <input type="checkbox" class="node-check" onchange="toggleNodeSelect(4,this)">
               <div class="node-icon"><i class="ti ti-palette"></i></div>
-              <div class="node-title">컬러 시스템</div>
+              <div class="node-title" ondblclick="startEditTitle(this)">컬러 시스템</div>
               <div class="node-sub">브랜드 컬러 가이드</div>
-              <span class="node-tag tag-child">하위</span>
+              <div class="node-hint">더블클릭해서 이름 변경</div>
+              <div class="conn-handle right" onmousedown="startConnect(event,4)"></div>
+              <div class="conn-handle bottom" onmousedown="startConnect(event,4)"></div>
             </div>
           </div>
+
+          <!-- LLM 연결 제안 (수락 + 거절 CTA) -->
           <div class="propose-banner" id="propose-banner">
             <i class="ti ti-git-merge"></i>
             포지셔닝 v2를 무드보드와 연결할까요?
             <button class="propose-accept" onclick="acceptProposal()">수락</button>
             <button class="propose-reject" onclick="rejectProposal()">거절</button>
           </div>
-          <span class="hint">노드 드래그 이동 · 빈 공간 드래그 = 보드 이동</span>
+
+          <!-- 엣지 삭제 팝업 -->
+          <div class="edge-popup" id="edge-popup" onclick="deleteEdge()"><i class="ti ti-scissors" style="font-size:11px"></i> 연결 끊기</div>
+
+          <!-- 노드 선택 액션바 -->
+          <div class="node-action-bar" id="node-action-bar">
+            <span class="action-bar-label" id="action-bar-label">0개 선택됨</span>
+            <div class="action-bar-divider"></div>
+            <button class="action-bar-btn discard" onclick="discardSelectedNodes()"><i class="ti ti-trash" style="font-size:11px"></i> 폐기로 이동</button>
+          </div>
+
+          <span class="hint">노드 이동: 드래그 · 연결: 초록 점 드래그 · 이름 변경: 더블클릭<br>연결 끊기: 선 클릭 · 보드 이동: 빈 공간 드래그</span>
         </div>
+
         <div class="sidebar">
           <div class="discard-panel">
             <div class="discard-header">
               <span class="discard-label">폐기</span>
               <div class="discard-actions">
-                <button class="discard-btn" onclick="restoreSelected()"><i class="ti ti-refresh"></i></button>
-                <button class="discard-btn danger" onclick="showDeleteModal()"><i class="ti ti-trash"></i></button>
+                <button class="discard-btn" onclick="restoreSelected()"><i class="ti ti-refresh" style="font-size:11px"></i> 복구</button>
+                <button class="discard-btn danger" onclick="showDeleteModal()"><i class="ti ti-trash" style="font-size:11px"></i> 영구삭제</button>
               </div>
             </div>
             <div id="discard-list">
-              <div class="discard-item" id="d1" data-node-id="">
-                <input type="checkbox" onchange="toggleDiscardSelect('d1',this)">
+              <div class="discard-item" id="d-pre" data-node-id="">
+                <input type="checkbox" onchange="toggleDiscardSelect('d-pre',this)">
                 <i class="ti ti-target" style="font-size:12px;color:#b4b2a9"></i>
                 <span class="discard-item-text">포지셔닝 v1</span>
               </div>
@@ -247,14 +340,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <div class="cta-card alert" id="cta-change">
               <div class="cta-msg alert"><i class="ti ti-alert-circle" style="font-size:11px;margin-right:3px"></i>포지셔닝 방향이 업데이트됐어요. 이어서 진행할까요?</div>
               <div class="cta-btns">
-                <button class="cta-action warn" onclick="alert('채팅으로 연결됩니다.')">이어서 진행</button>
+                <button class="cta-action warn" onclick="openChatFromNode()">이어서 진행</button>
                 <button class="cta-action" onclick="dismissCta('cta-change')">닫기</button>
               </div>
             </div>
             <div class="cta-card highlight" id="cta-next">
               <div class="cta-msg highlight"><i class="ti ti-bulb" style="font-size:11px;margin-right:3px"></i>뿌리 섹션 기반 다음 단계를 제안해요.</div>
               <div class="cta-btns">
-                <button class="cta-action primary" onclick="alert('채팅으로 연결됩니다.')">컬러 시스템 구체화</button>
+                <button class="cta-action primary" onclick="openChatFromNode()">컬러 시스템 구체화</button>
                 <button class="cta-action" onclick="dismissCta('cta-next')">닫기</button>
               </div>
             </div>
@@ -263,37 +356,384 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
     </div>
   </div>
-</div>
 
+  <!-- 채팅: 폴더 목록 -->
+  <div class="screen" id="screen-chat">
+    <div class="chat-screen">
+      <div class="chat-screen-header">
+        <div class="chat-screen-title">채팅</div>
+        <div class="chat-screen-sub">폴더를 선택해 뿌리 섹션이 연결된 채팅을 시작해요</div>
+      </div>
+      <div class="chat-folder-list" id="chat-folder-list">
+        <div class="chat-folder-item" onclick="openChatConv('브랜딩 프로젝트')">
+          <div class="chat-folder-icon"><i class="ti ti-folder"></i></div>
+          <div class="chat-folder-info">
+            <div class="chat-folder-name">브랜딩 프로젝트</div>
+            <div class="chat-folder-meta">뿌리 4개 연결됨</div>
+          </div>
+          <button class="chat-open-btn" onclick="event.stopPropagation();openChatConv('브랜딩 프로젝트')">채팅 열기</button>
+        </div>
+        <div class="chat-folder-item" onclick="openChatConv('제텔카스텐 시스템')">
+          <div class="chat-folder-icon"><i class="ti ti-folder"></i></div>
+          <div class="chat-folder-info">
+            <div class="chat-folder-name">제텔카스텐 시스템</div>
+            <div class="chat-folder-meta">뿌리 7개 연결됨</div>
+          </div>
+          <button class="chat-open-btn" onclick="event.stopPropagation();openChatConv('제텔카스텐 시스템')">채팅 열기</button>
+        </div>
+        <div class="chat-folder-item" onclick="openChatConv('UI 포트폴리오')">
+          <div class="chat-folder-icon"><i class="ti ti-folder"></i></div>
+          <div class="chat-folder-info">
+            <div class="chat-folder-name">UI 포트폴리오</div>
+            <div class="chat-folder-meta">뿌리 3개 연결됨</div>
+          </div>
+          <button class="chat-open-btn" onclick="event.stopPropagation();openChatConv('UI 포트폴리오')">채팅 열기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 채팅: 대화 화면 -->
+  <div class="screen" id="screen-chat-conv">
+    <div class="chat-conv-wrap">
+      <div class="chat-conv-header">
+        <span class="chat-back-link" onclick="backToChat()"><i class="ti ti-arrow-left"></i> 채팅</span>
+        <span class="breadcrumb-sep">/</span>
+        <span class="chat-folder-badge" id="chat-folder-badge">브랜딩 프로젝트</span>
+      </div>
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-input-row">
+        <input type="text" id="chat-input" placeholder="메시지를 입력하세요..." onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="chat-send-btn" onclick="sendChat()"><i class="ti ti-send"></i> 전송</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div id="modal-container"></div>
 
 <script>
-const NODE_W=140,NODE_H=104,COL_GAP=55,ROW_GAP=45;
-const nodeData={1:{x:60,y:70,w:NODE_W,h:NODE_H,level:0},2:{x:250,y:50,w:NODE_W,h:NODE_H,level:1},3:{x:420,y:90,w:NODE_W,h:NODE_H,level:2},4:{x:150,y:220,w:NODE_W,h:NODE_H,level:2}};
-const edges=[{id:'e-1-2',from:1,to:2},{id:'e-1-4',from:1,to:4},{id:'e-2-3',from:2,to:3}];
+/* ── 상태 ── */
+const NODE_W=144,NODE_H=108,COL_GAP=55,ROW_GAP=45;
+const nodeData={
+  1:{x:60,y:70,w:NODE_W,h:NODE_H},
+  2:{x:250,y:50,w:NODE_W,h:NODE_H},
+  3:{x:420,y:90,w:NODE_W,h:NODE_H},
+  4:{x:150,y:220,w:NODE_W,h:NODE_H}
+};
+// edges: {id, from, to, discarded?}
+const edges=[
+  {id:'e-1-2',from:1,to:2},
+  {id:'e-1-4',from:1,to:4},
+  {id:'e-2-3',from:2,to:3,proposed:true}
+];
 let panX=0,panY=0,isPanning=false,panStartX=0,panStartY=0;
 let draggingNode=null,dragOffX=0,dragOffY=0;
-let selectedDiscard=new Set(),selectedFolders=new Set(),addingFolder=false;
+let selectedNodes=new Set(),selectedDiscard=new Set(),selectedFolders=new Set();
+let addingFolder=false,connectingFrom=null,tempEdgeActive=false,activeEdgeId=null;
+let currentFolder='브랜딩 프로젝트';
 
+/* ── 탭 전환 ── */
+function switchMainTab(tab){
+  ['tab-drive','tab-chat'].forEach(t=>document.getElementById(t).classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  ['screen-folder','screen-node','screen-chat','screen-chat-conv'].forEach(s=>document.getElementById(s).classList.remove('active'));
+  if(tab==='drive')document.getElementById('screen-folder').classList.add('active');
+  if(tab==='chat')document.getElementById('screen-chat').classList.add('active');
+}
+
+/* ── 노드 이름 더블클릭 편집 (fix #1) ── */
+function startEditTitle(el){
+  const original=el.textContent;
+  el.contentEditable='true';
+  el.classList.add('editing');
+  el.focus();
+  const range=document.createRange();range.selectNodeContents(el);
+  window.getSelection().removeAllRanges();window.getSelection().addRange(range);
+  function finish(){
+    el.contentEditable='false';
+    el.classList.remove('editing');
+    if(!el.textContent.trim())el.textContent=original;
+    el.removeEventListener('blur',finish);
+    el.removeEventListener('keydown',keyHandler);
+  }
+  function keyHandler(e){if(e.key==='Enter'){e.preventDefault();finish();}}
+  el.addEventListener('blur',finish);
+  el.addEventListener('keydown',keyHandler);
+}
+
+/* ── 엣지 그리기 ── */
 function getCenter(id){const n=nodeData[id];return{x:n.x+n.w/2,y:n.y+n.h/2};}
-function drawEdges(){edges.forEach(e=>{const el=document.getElementById(e.id);if(!el||el.style.display==='none')return;const a=getCenter(e.from),b=getCenter(e.to);el.setAttribute('x1',a.x);el.setAttribute('y1',a.y);el.setAttribute('x2',b.x);el.setAttribute('y2',b.y);});}
-function applyTransform(){document.getElementById('board-canvas').style.transform=`translate(${panX}px,${panY}px)`;}
+function setLine(idSuffix,from,to){
+  const vis=document.getElementById(idSuffix+'-vis');
+  const hit=document.getElementById(idSuffix);
+  if(!vis||!hit)return;
+  const a=getCenter(from),b=getCenter(to);
+  [vis,hit].forEach(el=>{el.setAttribute('x1',a.x);el.setAttribute('y1',a.y);el.setAttribute('x2',b.x);el.setAttribute('y2',b.y);});
+}
+function drawEdges(){
+  edges.forEach(e=>{
+    if(e.discarded)return;
+    const vis=document.getElementById(e.id+'-vis');
+    const hit=document.getElementById(e.id);
+    if(!vis||!hit||vis.style.display==='none')return;
+    const a=getCenter(e.from),b=getCenter(e.to);
+    [vis,hit].forEach(el=>{el.setAttribute('x1',a.x);el.setAttribute('y1',a.y);el.setAttribute('x2',b.x);el.setAttribute('y2',b.y);});
+  });
+}
 
+/* ── 엣지 클릭 → 삭제 팝업 (fix #2 — 두꺼운 투명 타겟) ── */
+function onEdgeClick(e,eid){
+  e.stopPropagation();
+  activeEdgeId=eid;
+  const popup=document.getElementById('edge-popup');
+  const wr=document.getElementById('board-wrap').getBoundingClientRect();
+  popup.style.left=(e.clientX-wr.left+8)+'px';
+  popup.style.top=(e.clientY-wr.top-14)+'px';
+  popup.style.display='block';
+}
+function deleteEdge(){
+  if(!activeEdgeId)return;
+  const vis=document.getElementById(activeEdgeId+'-vis');
+  const hit=document.getElementById(activeEdgeId);
+  if(vis)vis.style.display='none';
+  if(hit)hit.style.display='none';
+  const idx=edges.findIndex(e=>e.id===activeEdgeId);
+  if(idx>-1)edges[idx].discarded=true;
+  document.getElementById('edge-popup').style.display='none';
+  activeEdgeId=null;
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#edge-popup'))document.getElementById('edge-popup').style.display='none';
+});
+
+/* ── 연결 핸들 ── */
+function startConnect(e,fromId){
+  e.stopPropagation();e.preventDefault();
+  connectingFrom=fromId;tempEdgeActive=true;
+  const temp=document.getElementById('temp-edge');
+  const c=getCenter(fromId);
+  temp.setAttribute('x1',c.x);temp.setAttribute('y1',c.y);temp.setAttribute('x2',c.x);temp.setAttribute('y2',c.y);
+  temp.style.display='';
+  document.querySelectorAll('.node-card').forEach(card=>{
+    if(parseInt(card.dataset.id)!==fromId)card.classList.add('conn-target');
+  });
+}
+function updateTempEdge(e){
+  if(!tempEdgeActive)return;
+  const wr=document.getElementById('board-wrap').getBoundingClientRect();
+  const temp=document.getElementById('temp-edge');
+  temp.setAttribute('x2',e.clientX-wr.left-panX);
+  temp.setAttribute('y2',e.clientY-wr.top-panY);
+}
+function finishConnect(e){
+  if(!tempEdgeActive)return;
+  document.getElementById('temp-edge').style.display='none';
+  document.querySelectorAll('.node-card.conn-target').forEach(c=>c.classList.remove('conn-target'));
+  const target=e.target.closest('.node-card');
+  if(target){
+    const toId=parseInt(target.dataset.id);
+    if(toId&&toId!==connectingFrom){
+      const exists=edges.find(ed=>!ed.discarded&&((ed.from===connectingFrom&&ed.to===toId)||(ed.from===toId&&ed.to===connectingFrom)));
+      if(!exists){
+        const eid='e-'+connectingFrom+'-'+toId+'-'+Date.now();
+        edges.push({id:eid,from:connectingFrom,to:toId});
+        const svg=document.getElementById('svg-edges');
+        // 보이는 선
+        const visLine=document.createElementNS('http://www.w3.org/2000/svg','line');
+        visLine.id=eid+'-vis';visLine.setAttribute('stroke','#B4B2A9');visLine.setAttribute('stroke-width','1');
+        visLine.setAttribute('marker-end','url(#arr)');visLine.style.pointerEvents='none';svg.appendChild(visLine);
+        // 투명 클릭 타겟
+        const hitLine=document.createElementNS('http://www.w3.org/2000/svg','line');
+        hitLine.id=eid;hitLine.setAttribute('stroke','transparent');hitLine.setAttribute('stroke-width','12');
+        hitLine.style.cursor='pointer';hitLine.setAttribute('onclick',`onEdgeClick(event,'${eid}')`);svg.appendChild(hitLine);
+        drawEdges();
+      }
+    }
+  }
+  connectingFrom=null;tempEdgeActive=false;
+}
+
+/* ── 노드 선택 & 액션바 ── */
+function toggleNodeSelect(id,cb){
+  const card=document.getElementById('n'+id);
+  if(cb.checked){selectedNodes.add(id);card.classList.add('selected-node');}
+  else{selectedNodes.delete(id);card.classList.remove('selected-node');}
+  updateActionBar();
+}
+function updateActionBar(){
+  const bar=document.getElementById('node-action-bar');
+  if(selectedNodes.size>0){bar.classList.add('visible');document.getElementById('action-bar-label').textContent=selectedNodes.size+'개 선택됨';}
+  else bar.classList.remove('visible');
+}
+function discardSelectedNodes(){selectedNodes.forEach(id=>discardNode(id));selectedNodes.clear();updateActionBar();}
+
+/* ── 드래그 (노드 & 보드 패닝) ── */
+const bw=document.getElementById('board-wrap');
+bw.addEventListener('mousedown',e=>{
+  if(e.target.closest('.conn-handle'))return;
+  if(e.target.closest('.node-card')){
+    const card=e.target.closest('.node-card');
+    if(e.target.type==='checkbox'||e.target.contentEditable==='true')return;
+    const id=parseInt(card.dataset.id);
+    const rect=card.getBoundingClientRect();
+    draggingNode=id;dragOffX=e.clientX-rect.left;dragOffY=e.clientY-rect.top;
+    card.classList.add('dragging','no-tr');bw.classList.add('node-dragging');e.stopPropagation();
+  } else{isPanning=true;panStartX=e.clientX-panX;panStartY=e.clientY-panY;bw.classList.add('panning');}
+});
+window.addEventListener('mousemove',e=>{
+  if(tempEdgeActive){updateTempEdge(e);return;}
+  if(draggingNode!==null){
+    const wr=bw.getBoundingClientRect();
+    const nx=e.clientX-wr.left-panX-dragOffX,ny=e.clientY-wr.top-panY-dragOffY;
+    nodeData[draggingNode].x=nx;nodeData[draggingNode].y=ny;
+    const c=document.getElementById('n'+draggingNode);c.style.left=nx+'px';c.style.top=ny+'px';drawEdges();
+    const dz=document.getElementById('drop-zone'),dr=dz.getBoundingClientRect();
+    if(e.clientX>=dr.left&&e.clientX<=dr.right&&e.clientY>=dr.top&&e.clientY<=dr.bottom)dz.classList.add('drag-over');
+    else dz.classList.remove('drag-over');
+  } else if(isPanning){panX=e.clientX-panStartX;panY=e.clientY-panStartY;document.getElementById('board-canvas').style.transform=`translate(${panX}px,${panY}px)`;}
+});
+window.addEventListener('mouseup',e=>{
+  if(tempEdgeActive){finishConnect(e);return;}
+  if(draggingNode!==null){
+    document.getElementById('n'+draggingNode).classList.remove('dragging');bw.classList.remove('node-dragging');
+    const dz=document.getElementById('drop-zone'),dr=dz.getBoundingClientRect();
+    if(e.clientX>=dr.left&&e.clientX<=dr.right&&e.clientY>=dr.top&&e.clientY<=dr.bottom)discardNode(draggingNode);
+    dz.classList.remove('drag-over');draggingNode=null;
+  }
+  if(isPanning){isPanning=false;bw.classList.remove('panning');}
+});
+
+/* ── 폐기 ── */
+function discardNode(id){
+  const card=document.getElementById('n'+id);if(!card||card.style.display==='none')return;
+  const title=card.querySelector('.node-title').textContent;
+  card.style.display='none';
+  selectedNodes.delete(id);updateActionBar();
+  // 엣지 숨기기 (discarded 마킹)
+  edges.forEach(e=>{
+    if(e.from===id||e.to===id){
+      e.discarded=true;
+      const v=document.getElementById(e.id+'-vis');const h=document.getElementById(e.id);
+      if(v)v.style.display='none';if(h)h.style.display='none';
+    }
+  });
+  const did='d'+Date.now();const item=document.createElement('div');
+  item.className='discard-item';item.id=did;item.dataset.nodeId=id;
+  // 폐기된 엣지 id 저장
+  const discardedEdgeIds=edges.filter(e=>(e.from===id||e.to===id)).map(e=>e.id).join(',');
+  item.dataset.edgeIds=discardedEdgeIds;
+  item.innerHTML=`<input type="checkbox" onchange="toggleDiscardSelect('${did}',this)"><i class="ti ti-file" style="font-size:12px;color:#b4b2a9"></i><span class="discard-item-text">${title}</span>`;
+  document.getElementById('discard-list').appendChild(item);
+}
+
+function toggleDiscardSelect(id,cb){if(cb.checked)selectedDiscard.add(id);else selectedDiscard.delete(id);}
+
+/* 복구: 노드 + 연결선 함께 복원 (fix #3) */
+function restoreSelected(){
+  selectedDiscard.forEach(did=>{
+    const item=document.getElementById(did);if(!item)return;
+    const nid=parseInt(item.dataset.nodeId);
+    if(nid){
+      const c=document.getElementById('n'+nid);if(c)c.style.display='';
+      // 연결된 엣지 복원
+      const eids=(item.dataset.edgeIds||'').split(',').filter(Boolean);
+      eids.forEach(eid=>{
+        const edgeObj=edges.find(e=>e.id===eid);
+        if(edgeObj){
+          // 상대 노드가 살아있을 때만 복원
+          const otherId=edgeObj.from===nid?edgeObj.to:edgeObj.from;
+          const otherCard=document.getElementById('n'+otherId);
+          if(otherCard&&otherCard.style.display!=='none'){
+            edgeObj.discarded=false;
+            const v=document.getElementById(eid+'-vis');const h=document.getElementById(eid);
+            if(v)v.style.display='';if(h)h.style.display='';
+          }
+        }
+      });
+    }
+    item.remove();
+  });
+  selectedDiscard.clear();drawEdges();
+}
+
+/* ── 제안 수락/거절 ── */
+function acceptProposal(){
+  document.getElementById('propose-banner').style.display='none';
+  document.getElementById('n3').classList.remove('proposed');
+  const vis=document.getElementById('e-2-3-vis');
+  if(vis){vis.style.strokeDasharray='none';vis.style.stroke='#B4B2A9';vis.setAttribute('marker-end','url(#arr)');}
+}
+function rejectProposal(){
+  document.getElementById('propose-banner').style.display='none';
+  const vis=document.getElementById('e-2-3-vis');const hit=document.getElementById('e-2-3');
+  if(vis)vis.style.display='none';if(hit)hit.style.display='none';
+  const idx=edges.findIndex(e=>e.id==='e-2-3');if(idx>-1)edges[idx].discarded=true;
+}
+
+/* ── 자동 정렬 (fix #4 — 연결 없는 노드는 별도 열) ── */
+function autoLayout(){
+  const visibleIds=Object.keys(nodeData).map(Number).filter(id=>{
+    const c=document.getElementById('n'+id);return c&&c.style.display!=='none';
+  });
+  // BFS로 레벨 계산
+  const levels={};const visited=new Set();
+  const liveEdges=edges.filter(e=>!e.discarded);
+  function bfs(startId,lvl){
+    const queue=[{id:startId,lvl}];
+    while(queue.length){
+      const{id,lvl}=queue.shift();
+      if(visited.has(id))continue;
+      visited.add(id);
+      levels[id]=lvl;
+      liveEdges.forEach(e=>{
+        if(e.from===id&&!visited.has(e.to))queue.push({id:e.to,lvl:lvl+1});
+        if(e.to===id&&!visited.has(e.from))queue.push({id:e.from,lvl:lvl+1});
+      });
+    }
+  }
+  // 연결된 노드 먼저
+  visibleIds.forEach(id=>{if(!visited.has(id))bfs(id,0);});
+  // 연결 없는 노드는 맨 오른쪽 별도 열
+  const maxLvl=Object.values(levels).length?Math.max(...Object.values(levels)):0;
+  const colMap={};
+  visibleIds.forEach(id=>{
+    const lvl=levels[id]??maxLvl+1;
+    if(!colMap[lvl])colMap[lvl]=[];colMap[lvl].push(id);
+  });
+  Object.entries(colMap).forEach(([lvl,ids])=>{
+    const cx=60+parseInt(lvl)*(NODE_W+COL_GAP);
+    ids.forEach((id,i)=>{nodeData[id].x=cx;nodeData[id].y=60+i*(NODE_H+ROW_GAP);});
+  });
+  visibleIds.forEach(id=>{
+    const c=document.getElementById('n'+id);if(!c)return;
+    c.classList.remove('no-tr');c.style.left=nodeData[id].x+'px';c.style.top=nodeData[id].y+'px';
+  });
+  const iv=setInterval(drawEdges,16);setTimeout(()=>clearInterval(iv),500);
+}
+
+/* ── 폴더 관리 ── */
 function openFolder(name){
+  currentFolder=name;
+  document.getElementById('back-label').textContent=name;
   document.getElementById('screen-folder').classList.remove('active');
   document.getElementById('screen-node').classList.add('active');
-  document.getElementById('back-label').textContent=name;
   setTimeout(drawEdges,50);
 }
-function goBack(){document.getElementById('screen-node').classList.remove('active');document.getElementById('screen-folder').classList.add('active');}
-
+function goBack(){
+  document.getElementById('screen-node').classList.remove('active');
+  document.getElementById('screen-folder').classList.add('active');
+}
 function toggleFolderSelect(id,cb){
   if(cb.checked)selectedFolders.add(id);else selectedFolders.delete(id);
   document.getElementById('sel-info').textContent=selectedFolders.size>0?`${selectedFolders.size}개 선택됨`:'폴더를 선택하면 삭제할 수 있어요';
   document.getElementById('del-folder-btn').disabled=selectedFolders.size===0;
 }
-function deleteSelectedFolders(){selectedFolders.forEach(id=>{const el=document.getElementById(id);if(el)el.remove();});selectedFolders.clear();document.getElementById('sel-info').textContent='폴더를 선택하면 삭제할 수 있어요';document.getElementById('del-folder-btn').disabled=true;}
-
+function deleteSelectedFolders(){
+  selectedFolders.forEach(id=>{const el=document.getElementById(id);if(el)el.remove();});
+  selectedFolders.clear();
+  document.getElementById('sel-info').textContent='폴더를 선택하면 삭제할 수 있어요';
+  document.getElementById('del-folder-btn').disabled=true;
+}
 function showAddForm(){
   if(addingFolder)return;addingFolder=true;
   const slot=document.getElementById('add-form-slot');
@@ -309,75 +749,64 @@ function confirmAdd(){
   card.innerHTML=`<input type="checkbox" class="folder-check" onclick="event.stopPropagation()" onchange="toggleFolderSelect('${id}',this)"><div class="folder-icon"><i class="ti ti-folder"></i></div><div class="folder-name">${name}</div><div class="folder-meta">뿌리 0개 · 폐기 0개</div>`;
   document.getElementById('folder-grid').insertBefore(card,document.getElementById('add-form-slot'));
   document.getElementById('add-form-slot').innerHTML='';addingFolder=false;
+  // 채팅 목록에도 추가
+  const ci=document.createElement('div');ci.className='chat-folder-item';ci.onclick=()=>openChatConv(name);
+  ci.innerHTML=`<div class="chat-folder-icon"><i class="ti ti-folder"></i></div><div class="chat-folder-info"><div class="chat-folder-name">${name}</div><div class="chat-folder-meta">뿌리 0개 연결됨</div></div><button class="chat-open-btn" onclick="event.stopPropagation();openChatConv('${name}')">채팅 열기</button>`;
+  document.getElementById('chat-folder-list').appendChild(ci);
 }
 
-const bw=document.getElementById('board-wrap');
-bw.addEventListener('mousedown',e=>{
-  if(e.target.closest('.node-card')){
-    const card=e.target.closest('.node-card');if(e.target.type==='checkbox')return;
-    const id=parseInt(card.dataset.id);const rect=card.getBoundingClientRect();
-    draggingNode=id;dragOffX=e.clientX-rect.left;dragOffY=e.clientY-rect.top;
-    card.classList.add('dragging','no-tr');bw.classList.add('node-dragging');e.stopPropagation();
-  } else {isPanning=true;panStartX=e.clientX-panX;panStartY=e.clientY-panY;bw.classList.add('panning');}
-});
-window.addEventListener('mousemove',e=>{
-  if(draggingNode!==null){
-    const wr=bw.getBoundingClientRect();
-    const nx=e.clientX-wr.left-panX-dragOffX,ny=e.clientY-wr.top-panY-dragOffY;
-    nodeData[draggingNode].x=nx;nodeData[draggingNode].y=ny;
-    const c=document.getElementById('n'+draggingNode);c.style.left=nx+'px';c.style.top=ny+'px';drawEdges();
-    const dz=document.getElementById('drop-zone'),dr=dz.getBoundingClientRect();
-    if(e.clientX>=dr.left&&e.clientX<=dr.right&&e.clientY>=dr.top&&e.clientY<=dr.bottom)dz.classList.add('drag-over');else dz.classList.remove('drag-over');
-  } else if(isPanning){panX=e.clientX-panStartX;panY=e.clientY-panStartY;applyTransform();}
-});
-window.addEventListener('mouseup',e=>{
-  if(draggingNode!==null){
-    document.getElementById('n'+draggingNode).classList.remove('dragging');bw.classList.remove('node-dragging');
-    const dz=document.getElementById('drop-zone'),dr=dz.getBoundingClientRect();
-    if(e.clientX>=dr.left&&e.clientX<=dr.right&&e.clientY>=dr.top&&e.clientY<=dr.bottom)discardNode(draggingNode);
-    dz.classList.remove('drag-over');draggingNode=null;
-  }
-  if(isPanning){isPanning=false;bw.classList.remove('panning');}
-});
+/* ── 노드 추가 ── */
+function addNode(){
+  const id=Date.now();
+  const x=80+Math.floor(Math.random()*200),y=60+Math.floor(Math.random()*120);
+  nodeData[id]={x,y,w:NODE_W,h:NODE_H};
+  const canvas=document.getElementById('board-canvas');
+  const card=document.createElement('div');card.className='node-card no-tr';card.id='n'+id;card.dataset.id=id;
+  card.style.left=x+'px';card.style.top=y+'px';
+  card.innerHTML=`<input type="checkbox" class="node-check" onchange="toggleNodeSelect(${id},this)"><div class="node-icon"><i class="ti ti-file"></i></div><div class="node-title" ondblclick="startEditTitle(this)">새 소스</div><div class="node-sub">더블클릭해서 이름 변경</div><div class="conn-handle right" onmousedown="startConnect(event,${id})"></div><div class="conn-handle bottom" onmousedown="startConnect(event,${id})"></div>`;
+  canvas.appendChild(card);
+}
 
-function discardNode(id){
-  const card=document.getElementById('n'+id);if(!card)return;
-  const title=card.querySelector('.node-title').textContent;card.style.display='none';
-  edges.forEach(e=>{if(e.from===id||e.to===id){const el=document.getElementById(e.id);if(el)el.style.display='none';}});
-  const did='d'+Date.now();const item=document.createElement('div');item.className='discard-item';item.id=did;item.dataset.nodeId=id;
-  item.innerHTML=`<input type="checkbox" onchange="toggleDiscardSelect('${did}',this)"><i class="ti ti-file" style="font-size:12px;color:#b4b2a9"></i><span class="discard-item-text">${title}</span>`;
-  document.getElementById('discard-list').appendChild(item);
+/* ── 채팅 ── */
+function openChatConv(name){
+  currentFolder=name;
+  document.getElementById('chat-folder-badge').textContent=name;
+  const msgs=document.getElementById('chat-messages');
+  msgs.innerHTML=`<div class="chat-context-badge"><i class="ti ti-database" style="font-size:10px"></i> 뿌리 섹션 소스 로드됨 — ${name}</div><div class="chat-msg assistant"><div class="chat-bubble">${name} 뿌리 섹션을 확인했어요. 어디서부터 이어갈까요?</div></div>`;
+  ['screen-chat','screen-folder','screen-node'].forEach(s=>document.getElementById(s).classList.remove('active'));
+  document.getElementById('screen-chat-conv').classList.add('active');
+  document.getElementById('tab-chat').classList.add('active');
+  document.getElementById('tab-drive').classList.remove('active');
 }
-function toggleDiscardSelect(id,cb){if(cb.checked)selectedDiscard.add(id);else selectedDiscard.delete(id);}
-function restoreSelected(){
-  selectedDiscard.forEach(did=>{const item=document.getElementById(did);if(!item)return;const nid=item.dataset.nodeId;if(nid){const c=document.getElementById('n'+nid);if(c)c.style.display='';edges.forEach(e=>{if(e.from==nid||e.to==nid){const el=document.getElementById(e.id);if(el)el.style.display='';}});}item.remove();});
-  selectedDiscard.clear();drawEdges();
+function openChatFromNode(){openChatConv(currentFolder);}
+function backToChat(){
+  document.getElementById('screen-chat-conv').classList.remove('active');
+  document.getElementById('screen-chat').classList.add('active');
 }
-function acceptProposal(){document.getElementById('propose-banner').style.display='none';document.getElementById('n3').classList.remove('proposed');const e=document.getElementById('e-2-3');if(e){e.style.strokeDasharray='none';e.style.stroke='#B4B2A9';e.setAttribute('marker-end','url(#arr)');}}
-function rejectProposal(){document.getElementById('propose-banner').style.display='none';const e=document.getElementById('e-2-3');if(e)e.style.display='none';}
-function autoLayout(){
-  const lm={0:[],1:[],2:[]};Object.entries(nodeData).forEach(([id,n])=>{const c=document.getElementById('n'+id);if(c&&c.style.display!=='none'&&lm[n.level])lm[n.level].push(parseInt(id));});
-  Object.entries(lm).forEach(([lvl,ids])=>{const cx=60+parseInt(lvl)*(NODE_W+COL_GAP);ids.forEach((id,i)=>{nodeData[id].x=cx;nodeData[id].y=60+i*(NODE_H+ROW_GAP);});});
-  Object.entries(nodeData).forEach(([id,n])=>{const c=document.getElementById('n'+id);if(!c||c.style.display==='none')return;c.classList.remove('no-tr');c.style.left=n.x+'px';c.style.top=n.y+'px';});
-  const iv=setInterval(drawEdges,16);setTimeout(()=>clearInterval(iv),500);
+function sendChat(){
+  const input=document.getElementById('chat-input');const val=input.value.trim();if(!val)return;
+  const msgs=document.getElementById('chat-messages');
+  const u=document.createElement('div');u.className='chat-msg user';u.innerHTML=`<div class="chat-bubble">${val}</div>`;
+  msgs.appendChild(u);input.value='';msgs.scrollTop=msgs.scrollHeight;
+  setTimeout(()=>{
+    const r=document.createElement('div');r.className='chat-msg assistant';
+    r.innerHTML=`<div class="chat-bubble">뿌리 섹션 맥락을 바탕으로 답변드릴게요. "${val}"에 대해 더 구체적으로 말씀해주시면 도움드릴 수 있어요.</div>`;
+    msgs.appendChild(r);msgs.scrollTop=msgs.scrollHeight;
+  },700);
 }
+
+/* ── 모달 ── */
 function showDeleteModal(){
   const mc=document.getElementById('modal-container');
-  if(selectedDiscard.size===0){mc.innerHTML=`<div class="modal-overlay" onclick="closeModal()"><div class="modal-box" onclick="event.stopPropagation()"><div class="modal-title">선택된 항목 없음</div><div class="modal-desc">체크박스로 항목을 선택해주세요.</div><div class="modal-btns"><button class="modal-cancel" onclick="closeModal()">확인</button></div></div></div>`;return;}
+  if(selectedDiscard.size===0){
+    mc.innerHTML=`<div class="modal-overlay" onclick="closeModal()"><div class="modal-box" onclick="event.stopPropagation()"><div class="modal-title">선택된 항목 없음</div><div class="modal-desc">체크박스로 항목을 선택해주세요.</div><div class="modal-btns"><button class="modal-cancel" onclick="closeModal()">확인</button></div></div></div>`;return;
+  }
   mc.innerHTML=`<div class="modal-overlay" onclick="closeModal()"><div class="modal-box" onclick="event.stopPropagation()"><div class="modal-title">영구삭제 확인</div><div class="modal-desc">${selectedDiscard.size}개를 영구삭제합니다. 되돌릴 수 없어요.</div><div class="modal-btns"><button class="modal-cancel" onclick="closeModal()">취소</button><button class="modal-confirm" onclick="confirmDelete()">영구삭제</button></div></div></div>`;
 }
 function confirmDelete(){selectedDiscard.forEach(did=>{const el=document.getElementById(did);if(el)el.remove();});selectedDiscard.clear();closeModal();}
 function closeModal(){document.getElementById('modal-container').innerHTML='';}
 function dismissCta(id){const el=document.getElementById(id);if(el)el.style.display='none';}
-function addNode(){
-  const id=Date.now();const x=60+Math.floor(Math.random()*200),y=60+Math.floor(Math.random()*120);
-  nodeData[id]={x,y,w:NODE_W,h:NODE_H,level:1};
-  const canvas=document.getElementById('board-canvas');const card=document.createElement('div');
-  card.className='node-card no-tr';card.id='n'+id;card.dataset.id=id;card.dataset.level=1;
-  card.style.left=x+'px';card.style.top=y+'px';
-  card.innerHTML=`<input type="checkbox" class="node-check"><div class="node-icon"><i class="ti ti-file"></i></div><div class="node-title">새 소스</div><div class="node-sub">드래그하여 배치</div><span class="node-tag tag-peer">동등</span>`;
-  canvas.appendChild(card);
-}
+
 drawEdges();
 </script>
 </body>
