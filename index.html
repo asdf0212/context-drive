@@ -258,37 +258,45 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             </svg>
             <div class="node-card no-tr" id="n1" data-id="1" style="left:60px;top:70px">
               <input type="checkbox" class="node-check" onchange="toggleNodeSelect(1,this)">
-              <div class="node-icon"><i class="ti ti-file-text"></i></div>
+              <div class="node-icon" style="color:#378ADD"><i class="ti ti-file-type-doc"></i></div>
               <div class="node-title" ondblclick="startEditTitle(this)">브랜드 에센스</div>
-              <div class="node-sub">핵심 가치 정의</div>
-              <div class="node-hint">더블클릭해서 이름 변경</div>
+              <div class="node-sub" style="display:flex;align-items:center;gap:4px">
+                <span style="font-size:9px;padding:1px 5px;border-radius:4px;background:#378ADD18;color:#378ADD;font-weight:500">DOCX</span>
+                <span>핵심 가치 정의</span>
+              </div>
               <div class="conn-handle right" onmousedown="startConnect(event,1)"></div>
               <div class="conn-handle bottom" onmousedown="startConnect(event,1)"></div>
             </div>
             <div class="node-card no-tr" id="n2" data-id="2" style="left:250px;top:50px">
               <input type="checkbox" class="node-check" onchange="toggleNodeSelect(2,this)">
-              <div class="node-icon"><i class="ti ti-photo"></i></div>
+              <div class="node-icon" style="color:#8B5CF6"><i class="ti ti-photo"></i></div>
               <div class="node-title" ondblclick="startEditTitle(this)">무드보드</div>
-              <div class="node-sub">비주얼 레퍼런스</div>
-              <div class="node-hint">더블클릭해서 이름 변경</div>
+              <div class="node-sub" style="display:flex;align-items:center;gap:4px">
+                <span style="font-size:9px;padding:1px 5px;border-radius:4px;background:#8B5CF618;color:#8B5CF6;font-weight:500">PNG</span>
+                <span>비주얼 레퍼런스</span>
+              </div>
               <div class="conn-handle right" onmousedown="startConnect(event,2)"></div>
               <div class="conn-handle bottom" onmousedown="startConnect(event,2)"></div>
             </div>
             <div class="node-card proposed no-tr" id="n3" data-id="3" style="left:420px;top:90px">
               <input type="checkbox" class="node-check" onchange="toggleNodeSelect(3,this)">
-              <div class="node-icon"><i class="ti ti-target"></i></div>
+              <div class="node-icon" style="color:#E24B4A"><i class="ti ti-file-type-pdf"></i></div>
               <div class="node-title" ondblclick="startEditTitle(this)">포지셔닝 v2</div>
-              <div class="node-sub">새 방향 문서</div>
-              <div class="node-hint">더블클릭해서 이름 변경</div>
+              <div class="node-sub" style="display:flex;align-items:center;gap:4px">
+                <span style="font-size:9px;padding:1px 5px;border-radius:4px;background:#E24B4A18;color:#E24B4A;font-weight:500">PDF</span>
+                <span>새 방향 문서</span>
+              </div>
               <div class="conn-handle right" onmousedown="startConnect(event,3)"></div>
               <div class="conn-handle bottom" onmousedown="startConnect(event,3)"></div>
             </div>
             <div class="node-card no-tr" id="n4" data-id="4" style="left:150px;top:220px">
               <input type="checkbox" class="node-check" onchange="toggleNodeSelect(4,this)">
-              <div class="node-icon"><i class="ti ti-palette"></i></div>
+              <div class="node-icon" style="color:#1D9E75"><i class="ti ti-file-type-xls"></i></div>
               <div class="node-title" ondblclick="startEditTitle(this)">컬러 시스템</div>
-              <div class="node-sub">브랜드 컬러 가이드</div>
-              <div class="node-hint">더블클릭해서 이름 변경</div>
+              <div class="node-sub" style="display:flex;align-items:center;gap:4px">
+                <span style="font-size:9px;padding:1px 5px;border-radius:4px;background:#1D9E7518;color:#1D9E75;font-weight:500">XLSX</span>
+                <span>브랜드 컬러 가이드</span>
+              </div>
               <div class="conn-handle right" onmousedown="startConnect(event,4)"></div>
               <div class="conn-handle bottom" onmousedown="startConnect(event,4)"></div>
             </div>
@@ -583,6 +591,7 @@ bw.addEventListener('mousedown',e=>{
 window.addEventListener('mousemove',e=>{
   if(tempEdgeActive){updateTempEdge(e);return;}
   if(draggingNode!==null){
+    if(!nodeData[draggingNode]){draggingNode=null;return;}
     const wr=bw.getBoundingClientRect();
     const nx=e.clientX-wr.left-panX-dragOffX,ny=e.clientY-wr.top-panY-dragOffY;
     nodeData[draggingNode].x=nx;nodeData[draggingNode].y=ny;
@@ -665,6 +674,7 @@ function acceptProposal(){
 }
 function rejectProposal(){
   document.getElementById('propose-banner').style.display='none';
+  document.getElementById('n3').classList.remove('proposed');
   const vis=document.getElementById('e-2-3-vis');const hit=document.getElementById('e-2-3');
   if(vis)vis.style.display='none';if(hit)hit.style.display='none';
   const idx=edges.findIndex(e=>e.id==='e-2-3');if(idx>-1)edges[idx].discarded=true;
@@ -755,15 +765,87 @@ function confirmAdd(){
   document.getElementById('chat-folder-list').appendChild(ci);
 }
 
-/* ── 노드 추가 ── */
+/* ── 파일 타입 → 아이콘 & 색상 ── */
+function getFileIcon(filename){
+  const ext=(filename.split('.').pop()||'').toLowerCase();
+  const map={
+    // 이미지
+    png:'ti-photo',jpg:'ti-photo',jpeg:'ti-photo',gif:'ti-photo',webp:'ti-photo',svg:'ti-photo',heic:'ti-photo',
+    // PDF
+    pdf:'ti-file-type-pdf',
+    // 텍스트/문서
+    txt:'ti-file-type-txt',md:'ti-markdown',
+    // Word
+    doc:'ti-file-type-doc',docx:'ti-file-type-doc',
+    // Excel/스프레드시트
+    xls:'ti-file-type-xls',xlsx:'ti-file-type-xls',csv:'ti-table',
+    // PPT
+    ppt:'ti-presentation',pptx:'ti-presentation',
+    // 영상
+    mp4:'ti-video',mov:'ti-video',avi:'ti-video',
+    // 음성
+    mp3:'ti-music',wav:'ti-music',m4a:'ti-music',
+    // 링크/기타
+    url:'ti-link',
+  };
+  return map[ext]||'ti-file';
+}
+function getFileColor(filename){
+  const ext=(filename.split('.').pop()||'').toLowerCase();
+  if(['png','jpg','jpeg','gif','webp','svg','heic'].includes(ext))return'#8B5CF6';
+  if(ext==='pdf')return'#E24B4A';
+  if(['doc','docx'].includes(ext))return'#378ADD';
+  if(['xls','xlsx','csv'].includes(ext))return'#1D9E75';
+  if(['ppt','pptx'].includes(ext))return'#EF9F27';
+  if(['mp4','mov','avi'].includes(ext))return'#EC4899';
+  if(['mp3','wav','m4a'].includes(ext))return'#06B6D4';
+  return'#888780';
+}
+function isUnsupportedByLLM(filename){
+  const ext=(filename.split('.').pop()||'').toLowerCase();
+  return['mp4','mov','avi','mp3','wav','m4a','flac','ogg'].includes(ext);
+}
+
+/* ── 소스 추가: 파일 피커 ── */
 function addNode(){
-  const id=Date.now();
-  const x=80+Math.floor(Math.random()*200),y=60+Math.floor(Math.random()*120);
+  const input=document.createElement('input');
+  input.type='file';
+  input.multiple=true;
+  input.accept='*/*';
+  input.onchange=()=>{
+    Array.from(input.files).forEach((file,i)=>{
+      setTimeout(()=>createNodeFromFile(file),i*80);
+    });
+  };
+  input.click();
+}
+
+function createNodeFromFile(file){
+  const id=Date.now()+Math.floor(Math.random()*1000); // 정수 ID 보장
+  const x=80+Math.floor(Math.random()*220),y=60+Math.floor(Math.random()*140);
   nodeData[id]={x,y,w:NODE_W,h:NODE_H};
+  const icon=getFileIcon(file.name);
+  const color=getFileColor(file.name);
+  const ext=(file.name.split('.').pop()||'').toUpperCase();
+  const size=file.size<1024*1024?(file.size/1024).toFixed(0)+' KB':((file.size/1024/1024).toFixed(1))+' MB';
   const canvas=document.getElementById('board-canvas');
   const card=document.createElement('div');card.className='node-card no-tr';card.id='n'+id;card.dataset.id=id;
   card.style.left=x+'px';card.style.top=y+'px';
-  card.innerHTML=`<input type="checkbox" class="node-check" onchange="toggleNodeSelect(${id},this)"><div class="node-icon"><i class="ti ti-file"></i></div><div class="node-title" ondblclick="startEditTitle(this)">새 소스</div><div class="node-sub">더블클릭해서 이름 변경</div><div class="conn-handle right" onmousedown="startConnect(event,${id})"></div><div class="conn-handle bottom" onmousedown="startConnect(event,${id})"></div>`;
+  // 파일명에서 확장자 제외한 이름
+  const baseName=file.name.replace(/\.[^.]+$/,'');
+  const unsupported=isUnsupportedByLLM(file.name);
+  const warningBadge=unsupported?`<div style="font-size:9px;color:#EF9F27;display:flex;align-items:center;gap:2px;margin-top:3px"><i class="ti ti-alert-triangle" style="font-size:10px"></i> LLM이 읽을 수 없는 파일</div>`:'';
+  card.innerHTML=`
+    <input type="checkbox" class="node-check" onchange="toggleNodeSelect(${id},this)">
+    <div class="node-icon" style="color:${color}"><i class="ti ${icon}"></i></div>
+    <div class="node-title" ondblclick="startEditTitle(this)">${baseName}</div>
+    <div class="node-sub" style="display:flex;align-items:center;gap:4px">
+      <span style="font-size:9px;padding:1px 5px;border-radius:4px;background:${color}18;color:${color};font-weight:500">${ext}</span>
+      <span>${size}</span>
+    </div>
+    ${warningBadge}
+    <div class="conn-handle right" onmousedown="startConnect(event,${id})"></div>
+    <div class="conn-handle bottom" onmousedown="startConnect(event,${id})"></div>`;
   canvas.appendChild(card);
 }
 
